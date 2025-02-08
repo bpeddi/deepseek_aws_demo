@@ -126,15 +126,23 @@ class DockerInfraPipeline(Stack):
         #     owners=["137112412989"],  # Amazon's owner ID
         # )       
         # Create EC2 Instance
+
+
+        key_pair = ec2.KeyPair.from_key_pair_attributes(self, "KeyPair",
+                                 key_pair_name="simplytrack",
+        )
+   
+        
         ami = ec2.MachineImage.latest_amazon_linux2() 
         instance = ec2.Instance(
             self, "DeepSeekInstance",
             instance_type=ec2.InstanceType("g4dn.xlarge"),
-            # instance_type=ec2.InstanceType("inf2.xlarge"),
+            # instance_type=ec2.InstanceType("r5.xlarge"),
             machine_image=ami,
             vpc=vpc,
             security_group=security_group,
-            key_name="simplytrack",  # Replace with actual key pair
+            # key_name="simplytrack",  # Replace with actual key pair
+            key_pair = key_pair,
             role=role,
             # user_data=ec2.UserData.custom(user_data),
             block_devices=[
