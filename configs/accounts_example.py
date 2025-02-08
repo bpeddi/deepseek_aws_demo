@@ -16,7 +16,7 @@ managed_accounts = {
     },
     "prod": {
         "enabled": True,
-        "account": "xxxxxxxx",
+        "account": "594801xxxxxxxx937661",
         "region": default_region,
         "vpc_id": "vpc-xxxxxxxx",
         "private_subnets": ["subnet-xxxxxxxx", "subnet-xxxxxxxx"],
