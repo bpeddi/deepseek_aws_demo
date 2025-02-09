@@ -136,7 +136,7 @@ class DockerInfraPipeline(Stack):
         ami = ec2.MachineImage.latest_amazon_linux2() 
         instance = ec2.Instance(
             self, "DeepSeekInstance",
-            instance_type=ec2.InstanceType("g4dn.xlarge"),
+            instance_type=ec2.InstanceType("g4dn.2xlarge"),
             # instance_type=ec2.InstanceType("r5.xlarge"),
             machine_image=ami,
             vpc=vpc,

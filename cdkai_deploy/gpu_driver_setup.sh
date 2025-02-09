@@ -34,12 +34,12 @@ sudo systemctl restart docker
 
 docker network create ollama_nw_1
 
-docker run -d --network ollama_nw_1 -v ollama:/root/.ollama -p 11434:11434 --name ollama_1 ollama/ollama 
-docker run -d --network ollama_nw_1 -v ollama:/root/.ollama -p 11435:11434 --name ollama_2 ollama/ollama 
-docker run -d --network ollama_nw_1 -v ollama:/root/.ollama -p 11436:11434 --name ollama_3 ollama/ollama 
-docker run -d --network ollama_nw_1 -v ollama:/root/.ollama -p 11437:11434 --name ollama_4 ollama/ollama 
+docker run -d --gpus=all --network ollama_nw_1 -v ollama:/root/.ollama -p 11438:11434 --name ollama_1 ollama/ollama 
+docker run -d --gpus=all --network ollama_nw_1 -v ollama:/root/.ollama -p 11435:11434 --name ollama_2 ollama/ollama 
+docker run -d --gpus=all --network ollama_nw_1 -v ollama:/root/.ollama -p 11436:11434 --name ollama_3 ollama/ollama 
+docker run -d --gpus=all --network ollama_nw_1 -v ollama:/root/.ollama -p 11437:11434 --name ollama_4 ollama/ollama 
 
-docker run -d --gpus=all --network ollama_nw_1 -p 3000:8080 -e OLLAMA_BASE_URL="http://ollama_1:11434;http://ollama_1:11435;http://ollama_1:11436;" -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:main
+docker run -d --gpus=all --network ollama_nw_1 -p 3000:8080 -e OLLAMA_BASE_URL="http://ollama_1:11434;http://ollama_1:11435;http://ollama_1:11436;http://ollama_1:11437;http://ollama_1:11438;" -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:main
 sudo yum install nginx -y
 
 docker exec -it ollama_1 ollama pull llama3.2

@@ -2,3 +2,8 @@ aws-cdk-lib>=2.23.0
 constructs>=10.0.0,<11.0.0
 cdk_nag
 PyYAML
+streamlit 
+langchain 
+langchain-ollama
+langchain_core
+langchain_community
