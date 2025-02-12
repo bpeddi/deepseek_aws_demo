@@ -11,18 +11,10 @@ This project provisions an AI infrastructure for deepseek AI model  using **AWS 
 - Active AWS account with appropriate permissions to launch EC2 instances and manage related resources.
 - Service Quota limit for approved for Running On-Demand Inf instances under Amazon Elastic Compute Cloud (Amazon EC2) with a value of 96 or above.
 - A Key Pair created to connect with EC2 instance.
-
-### Before deploying the infrastructure, ensure you have the following:
-1. An AWS account with appropriate permissions.
-2. AWS CLI installed and configured:
-   ```bash
-   aws configure
-   ```
-3. Node.js and Python3 installed.
-4. AWS CDK installed:
-   ```bash
-   npm install -g aws-cdk
-   ```
+- **AWS CDK** installed (`npm install -g aws-cdk`)
+- **AWS CLI** configured (`aws configure`)
+- **Python** (>= 3.8)
+- **AWS account with required permissions**
 
 
 ## Features
@@ -69,12 +61,7 @@ sudo touch /etc/modprobe.d/nvidia.conf
 echo "options nvidia NVreg_EnableGpuFirmware=0" | sudo tee --append /etc/modprobe.d/nvidia.conf
 ```
 
-## Prerequisites
 
-- **AWS CDK** installed (`npm install -g aws-cdk`)
-- **AWS CLI** configured (`aws configure`)
-- **Python** (>= 3.8)
-- **AWS account with required permissions**
 
 ## Deployment Steps
 
