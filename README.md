@@ -12,6 +12,19 @@ This project provisions an AI infrastructure for deepseek AI model  using **AWS 
 - Service Quota limit for approved for Running On-Demand Inf instances under Amazon Elastic Compute Cloud (Amazon EC2) with a value of 96 or above.
 - A Key Pair created to connect with EC2 instance.
 
+### Before deploying the infrastructure, ensure you have the following:
+1. An AWS account with appropriate permissions.
+2. AWS CLI installed and configured:
+   ```bash
+   aws configure
+   ```
+3. Node.js and Python3 installed.
+4. AWS CDK installed:
+   ```bash
+   npm install -g aws-cdk
+   ```
+
+
 ## Features
 
 - **VPC Configuration:**
@@ -65,11 +78,14 @@ echo "options nvidia NVreg_EnableGpuFirmware=0" | sudo tee --append /etc/modprob
 
 ## Deployment Steps
 
-1. **Clone this repository:**
-   ```sh
-   git clone <repo-url>
-   cd <repo-folder>
+## Setup
+
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/bpeddi/deepseek_aws_demo.git
+   cd deepseek_aws_demo/cdkai_deploy
    ```
+
 2. **Create and activate a virtual environment:**
    ```sh
    python3 -m venv .venv
@@ -88,6 +104,7 @@ echo "options nvidia NVreg_EnableGpuFirmware=0" | sudo tee --append /etc/modprob
    ```sh
    cdk deploy
    ```
+
 
 ## Cleanup
 
@@ -112,4 +129,131 @@ Modify the `conigs/accounts.py` or update `AIInfraPipeline` class parameters to 
 [Bala Peddi]\
 [bala.peddi@gmail.com]
 
+
+
+Below is a `README.md` file for the provided AWS CDK code. This file explains the purpose, setup, and deployment of the infrastructure defined in the `ai_deploy.py` script.
+
+---
+
+# AWS CDK Infrastructure for AI Deployment
+
+This project uses the AWS Cloud Development Kit (CDK) to define and deploy infrastructure for an AI-based solution. The infrastructure includes a VPC, EC2 instance, security groups, IAM roles, and other AWS resources necessary for deploying and running an AI workload.
+
+## Table of Contents
+- [Overview](#overview)
+- [Prerequisites](#prerequisites)
+- [Setup](#setup)
+- [Deployment](#deployment)
+- [Infrastructure Details](#infrastructure-details)
+- [Usage](#usage)
+- [Cleanup](#cleanup)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Overview
+The `ai_deploy.py` script defines an AWS CDK stack that provisions the following resources:
+- A **VPC** with public and private subnets.
+- An **EC2 instance** for running AI workloads.
+- **Security groups** to control inbound and outbound traffic.
+- **IAM roles** and policies for granting necessary permissions.
+- An **S3 bucket** for storing artifacts.
+
+This infrastructure is designed to support AI workloads, such as machine learning inference or model training, by providing a secure and scalable environment.
+
+## Prerequisites
+Before deploying the infrastructure, ensure you have the following:
+1. An AWS account with appropriate permissions.
+2. AWS CLI installed and configured:
+   ```bash
+   aws configure
+   ```
+3. Node.js and Python installed.
+4. AWS CDK installed:
+   ```bash
+   npm install -g aws-cdk
+   ```
+
+## Setup
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/bpeddi/deepseek_aws_demo.git
+   cd deepseek_aws_demo/cdkai_deploy
+   ```
+2. Install the required dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Bootstrap the AWS CDK (if not already bootstrapped):
+   ```bash
+   cdk bootstrap
+   ```
+
+## Deployment
+To deploy the infrastructure, run the following command:
+```bash
+cdk deploy
+```
+This will create the resources defined in the `ai_deploy.py` script.
+
+## Infrastructure Details
+### VPC
+- A VPC with a CIDR block of `10.0.0.0/24` is created.
+- The VPC includes:
+  - Public subnets for resources that need internet access.
+  - Private subnets for internal resources.
+  - A NAT gateway for outbound internet access from private subnets.
+  - An S3 gateway endpoint for secure access to S3.
+
+### EC2 Instance
+- An EC2 instance of type `g4dn.2xlarge` is provisioned for AI workloads.
+- The instance is configured with:
+  - A 100 GB GP3 EBS volume.
+  - A security group allowing SSH (port 22) and custom ports (3000 and 11434).
+  - An IAM role with `AmazonS3ReadOnlyAccess` policy for accessing S3.
+
+### Security Group
+- A security group is created to control traffic to the EC2 instance.
+- Inbound rules allow:
+  - SSH access (port 22) from any IP.
+  - Access to ports 3000 and 11434 from any IP.
+- Outbound rules allow all traffic.
+
+### IAM Role
+- An IAM role is created for the EC2 instance.
+- The role has the `AmazonS3ReadOnlyAccess` policy attached, allowing the instance to read from S3.
+
+### S3 Bucket
+- An existing S3 bucket is referenced for storing artifacts.
+
+## Usage
+Once the infrastructure is deployed, you can:
+1. SSH into the EC2 instance:
+   ```bash
+   ssh -i <your-key-pair>.pem ec2-user@<instance-public-ip>
+   ```
+2. Deploy your AI workload on the instance.
+3. Access the workload via the configured ports (3000 and 11434).
+
+## Cleanup
+To avoid incurring charges, destroy the deployed resources when you're done:
+```bash
+cdk destroy
+```
+
+## Contributing
+Contributions are welcome! If you'd like to contribute, please follow these steps:
+1. Fork the repository.
+2. Create a new branch for your feature or bugfix.
+3. Submit a pull request with a detailed description of your changes.
+
+## License
+This project is licensed under the [License Name] - see the [LICENSE](LICENSE) file for details.
+
+---
+
+### Notes
+- Replace placeholders like `[License Name]` and `<your-key-pair>` with actual values.
+- If there are additional details or specific instructions for using the AI workload, include them in the **Usage** section.
+
+Let me know if you need further assistance!
 
