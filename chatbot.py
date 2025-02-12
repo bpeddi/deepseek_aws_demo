@@ -41,7 +41,7 @@ if user_input := st.chat_input("Ask me anything..."):
     
     # Generate response
     chat_history = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages])
-    response = LLMChain(llm=llm, prompt=prompt).run(chat_history=chat_history, question=user_input)
+    response = LLMChain(llm=ChatOllama, prompt=prompt).run(chat_history=chat_history, question=user_input)
     
     # Add AI response to session state
     st.session_state.messages.append({"role": "assistant", "content": response})

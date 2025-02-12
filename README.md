@@ -1,60 +1,109 @@
 
-# Welcome to your CDK Python project!
+# AI Infrastructure Pipeline - AWS CDK
 
-![Architecture](aws_infra.PNG)
+## Overview
 
-This is a blank project for CDK development with Python.
+This project provisions an AI infrastructure for deepseek AI model  using **AWS CDK (Cloud Development Kit)** with Python. The infrastructure includes an Amazon **VPC, EC2 Instance, IAM Roles, Security Groups, and S3 Bucket** integration. This CDK code also deployes Docker Instance and Downloads DeepSeek and Ollama models along with  open-webui for inference. 
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+![Architecture](deepseek_aws.PNG)
 
-This project is set up like a standard Python project.  The initialization
-process also creates a virtualenv within this project, stored under the `.venv`
-directory.  To create the virtualenv it assumes that there is a `python3`
-(or `python` for Windows) executable in your path with access to the `venv`
-package. If for any reason the automatic creation of the virtualenv fails,
-you can create the virtualenv manually.
+## Prerequisites:
+- Active AWS account with appropriate permissions to launch EC2 instances and manage related resources.
+- Service Quota limit for approved for Running On-Demand Inf instances under Amazon Elastic Compute Cloud (Amazon EC2) with a value of 96 or above.
+- A Key Pair created to connect with EC2 instance.
 
-To manually create a virtualenv on MacOS and Linux:
+## Features
 
+- **VPC Configuration:**
+  - Public and private subnets.
+  - NAT gateway for outbound internet access.
+  - S3 VPC Endpoint for efficient data transfer.
+- **Security Group:**
+  - SSH (Port 22) access.
+  - AI model serving ports (3000, 11434, etc.).
+- **IAM Role & Instance Profile:**
+  - EC2 assumes IAM Role with **AmazonS3ReadOnlyAccess**.
+- **EC2 Instance Configuration:**
+  - Uses an **r5a.2xlarge** instance type.
+  - Boots with Amazon Linux 2 AMI.
+  - Installs Docker and deploys AI models (Ollama, Open-WebUI).
+  - Uses key pair authentication.
+
+## Deploying to CPU based EC2 instance 
+
+## Deploying to GPU-powered EC2 instance instance 
+### Install and configure NVIDIA drivers on EC2 Instance
+Run the following commands in the session manager terminal to install the NVIDIA GRID drivers on the g4dn EC2 instance.
+
+```sudo yum update -y
+sudo yum install gcc makesudo yum install -y gcc kernel-devel-$(uname -r)
+cd ~
+aws s3 cp --recursive s3://ec2-linux-nvidia-drivers/latest/ .
+chmod +x NVIDIA-Linux-x86_64*.run
+mkdir /home/ssm-user/tmp
+chmod -R 777 tmp
+cd /home/ssm-user 
+export TMPDIR=/home/ssm-user/tmp
+CC=/usr/bin/gcc10-cc ./NVIDIA-Linux-x86_64*.run --tmpdir=$TMPDIR
+nvidia-smi -q | head
+sudo touch /etc/modprobe.d/nvidia.conf
+echo "options nvidia NVreg_EnableGpuFirmware=0" | sudo tee --append /etc/modprobe.d/nvidia.conf
 ```
-$ python3 -m venv .venv
+
+## Prerequisites
+
+- **AWS CDK** installed (`npm install -g aws-cdk`)
+- **AWS CLI** configured (`aws configure`)
+- **Python** (>= 3.8)
+- **AWS account with required permissions**
+
+## Deployment Steps
+
+1. **Clone this repository:**
+   ```sh
+   git clone <repo-url>
+   cd <repo-folder>
+   ```
+2. **Create and activate a virtual environment:**
+   ```sh
+   python3 -m venv .venv
+   source .venv/bin/activate   # Mac/Linux
+   .venv\Scripts\activate      # Windows
+   ```
+3. **Install dependencies:**
+   ```sh
+   pip install -r requirements.txt
+   ```
+4. **Bootstrap CDK (if first-time deployment):**
+   ```sh
+   cdk bootstrap
+   ```
+5. **Deploy the stack:**
+   ```sh
+   cdk deploy
+   ```
+
+## Cleanup
+
+To remove the resources provisioned:
+
+```sh
+cdk destroy
 ```
 
-After the init process completes and the virtualenv is created, you can use the following
-step to activate your virtualenv.
+## Configuration
 
-```
-$ source .venv/bin/activate
-```
+Modify the `conigs/accounts.py` or update `AIInfraPipeline` class parameters to customize the deployment.
 
-If you are a Windows platform, you would activate the virtualenv like this:
+## Troubleshooting
 
-```
-% .venv\Scripts\activate.bat
-```
+- Ensure AWS credentials are correctly configured.
+- Check **CloudFormation** stack logs for deployment errors.
+- Verify security group rules if access issues arise.
 
-Once the virtualenv is activated, you can install the required dependencies.
+## Author
 
-```
-$ pip install -r requirements.txt
-```
+[Your Name]\
+[Your Contact Info]
 
-At this point you can now synthesize the CloudFormation template for this code.
 
-```
-$ cdk synth
-```
-
-To add additional dependencies, for example other CDK libraries, just add
-them to your `setup.py` file and rerun the `pip install -r requirements.txt`
-command.
-
-## Useful commands
-
- * `cdk ls`          list all stacks in the app
- * `cdk synth`       emits the synthesized CloudFormation template
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk docs`        open CDK documentation
-
-Enjoy!

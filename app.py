@@ -4,7 +4,7 @@ import os
 import aws_cdk as cdk
 import configs.accounts as a
 import configs.globalconfig as g
-from cdkai_deploy.ai_deploy import DockerInfraPipeline
+from cdkai_deploy.ai_deploy import AIInfraPipeline
 
 
 
@@ -18,10 +18,8 @@ app = cdk.App()
 for env_name in ["dev",  "prod"]:
     if (a.managed_accounts[env_name]["enabled"]):
         
-        DockerInfraPipeline(app, env_name+"-ai-pipeline",
+        AIInfraPipeline(app, env_name+"-ai-pipeline",
             env=cdk.Environment(account=a.devops_account["account"],region=a.devops_account["region"]),
-            target_account=a.managed_accounts[env_name]["account"],
-            target_region=a.managed_accounts[env_name]["region"],
             env_name=env_name,
             vpccluster_vpc_id=a.managed_accounts[env_name]["vpc_id"],
             private_subnets=a.managed_accounts[env_name]["private_subnets"],
