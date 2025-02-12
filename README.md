@@ -31,9 +31,15 @@ This project provisions an AI infrastructure for deepseek AI model  using **AWS 
 
 ## Deploying to CPU based EC2 instance 
 
+No changes required ,This code works as is
+
 ## Deploying to GPU-powered EC2 instance instance 
+
 ### Install and configure NVIDIA drivers on EC2 Instance
-Run the following commands in the session manager terminal to install the NVIDIA GRID drivers on the g4dn EC2 instance.
+If you are planning to use GPU-powered EC2 instance, you will have to change InstanceType below line to g4dn.xlarge in cdkai_deploy/ai_deploy.py
+```instance_type=ec2.InstanceType("r5a.2xlarge"),  # Define instance type```
+
+Login to EC2 instance and Run the following commands in the to install the NVIDIA GRID drivers on the g4dn EC2 instance.
 
 ```sudo yum update -y
 sudo yum install gcc makesudo yum install -y gcc kernel-devel-$(uname -r)
@@ -103,7 +109,7 @@ Modify the `conigs/accounts.py` or update `AIInfraPipeline` class parameters to 
 
 ## Author
 
-[Your Name]\
-[Your Contact Info]
+[Bala Peddi]\
+[bala.peddi@gmail.com]
 
 
