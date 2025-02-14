@@ -1,9 +1,13 @@
 
-# AI Infrastructure Pipeline - AWS CDK
+# Deepseek Infrastructure Pipeline - AWS CDK
 
 ## Overview
 
-This project provisions an AI infrastructure for deepseek AI model  using **AWS CDK (Cloud Development Kit)** with Python. The infrastructure includes an Amazon **VPC, EC2 Instance, IAM Roles, Security Groups, and S3 Bucket** integration. This CDK code also deployes Docker Instance and Downloads DeepSeek and Ollama models along with  open-webui for inference. 
+DeepSeek R1 is a large language model developed with a strong focus on reasoning tasks. It excels at problems requiring multi-step analysis and logical thinking. Unlike typical models that rely heavily on Supervised Fine-Tuning (SFT), DeepSeek R1 uses Reinforcement Learning (RL) as its primary training strategy. This emphasis on RL empowers it to figure out solutions with greater independence. <br> <br>
+
+
+This project provisions a scalable and secure AI infrastructure for deploying the DeepSeek AI model using **AWS CDK (Cloud Development Kit)** with Python. The architecture leverages **Amazon VPC, EC2 Instances, IAM Roles, Security Groups, and S3 Bucket** integration to provide a robust environment for AI model training and inference. This CDK implementation also automates the deployment of Docker containers and efficiently downloads the DeepSeek and Ollama models, alongside Open-WebUI for seamless model inference and interaction.
+
 
 ![Architecture](deepseek_aws.PNG)
 
