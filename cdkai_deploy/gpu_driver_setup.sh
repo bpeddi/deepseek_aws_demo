@@ -9,7 +9,7 @@ mkdir /home/ec2-user/tmp
 chmod -R 777 tmp
 cd /home/ec2-user 
 export TMPDIR=/home/ec2-user/tmp
-CC=/usr/bin/gcc10-cc ./NVIDIA-Linux-x86_64*.run --tmpdir=$TMPDIR
+sudo CC=/usr/bin/gcc10-cc ./NVIDIA-Linux-x86_64*.run --tmpdir=$TMPDIR
 
 # verify the drivers are correctly installed and disable GSP
 nvidia-smi -q | head

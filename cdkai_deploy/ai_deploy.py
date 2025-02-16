@@ -16,8 +16,8 @@ class AIInfraPipeline(Stack):
         super().__init__(scope, construct_id, env=kwargs["env"])
 
         # Extracting parameters from kwargs
+        deployment_type = kwargs["deployment_type"]
         env_name = kwargs["env_name"]
-        artifacts_bucket = kwargs["artifacts_bucket"]
 
         # ==================================================
         # ==================== VPC =========================
@@ -45,11 +45,6 @@ class AIInfraPipeline(Stack):
         # Add an S3 endpoint to the VPC to enable private S3 access
         vpc.add_gateway_endpoint(
             "S3Endpoint", service=ec2.GatewayVpcEndpointAwsService.S3
-        )
-
-        # Access an existing S3 bucket
-        existing_bucket = s3.Bucket.from_bucket_name(
-            self, "ExistingBucket", artifacts_bucket
         )
 
         # ==================================================
@@ -120,34 +115,65 @@ class AIInfraPipeline(Stack):
         # Define user data script for instance initialization
         user_data = ec2.UserData.for_linux()
 
-        user_data.add_commands(
-            "sudo yum update -y",
-            "sudo amazon-linux-extras enable docker",
-            "sudo yum install -y docker",
-            "sudo systemctl start docker",
-            "sudo systemctl enable docker",
-            "sudo usermod -aG docker ec2-user",
-            # Create an Ollama containers,Pull the models in their respective containers,Create the Open WebUI container to serve as the front-end:
-            "docker network create ai-network",
-            "docker run -d --network ai-network --name ollama-llama3 -v ollama-llama3:/root/.ollama -p 11434:11434 ollama/ollama",
-            "docker run -d  --network ai-network --name ollama-deepseek -v ollama-deepseek:/root/.ollama -p 11435:11434 ollama/ollama",
-            "docker exec  ollama-llama3 ollama pull llama3.2",
-            "docker exec  ollama-deepseek ollama pull deepseek-r1:7b",
-            "docker run -d --network ai-network  -p 3000:8080 -e OLLAMA_BASE_URLS='http://ollama-llama3:11434;http://ollama-deepseek:11434' -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:main",
-            "docker exec  ollama-llama3 ollama pull llama3.2",
-            "docker exec  ollama-deepseek ollama pull deepseek-r1:7b",
-            # docker exec -it ollama_2 ollama pull llama3.2
-        )
+        print(deployment_type)
+        if deployment_type == "gpu":
+
+            user_data.add_commands(
+                "sudo yum install -y gcc kernel-devel-$(uname -r)",
+                "aws s3 cp --recursive s3://ec2-linux-nvidia-drivers/latest/ .",
+                "sudo chmod +x ./NVIDIA-Linux-x86_64*.run",
+                "sudo /bin/sh ./NVIDIA-Linux-x86_64*.run --tmpdir . --silent",
+                "sudo touch /etc/modprobe.d/nvidia.conf",
+                f'echo "options nvidia NVreg_EnableGpuFirmware=0" | sudo tee --append /etc/modprobe.d/nvidia.conf',
+                "sudo yum install -y docker",
+                "sudo usermod -a -G docker ec2-user",
+                "sudo systemctl enable docker.service",
+                "sudo systemctl start docker.service",
+                "curl -s -L https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo | sudo tee /etc/yum.repos.d/nvidia-container-toolkit.repo",
+                "sudo yum install -y nvidia-container-toolkit",
+                "sudo nvidia-ctk runtime configure --runtime=docker",
+                "sudo systemctl restart docker",
+                # Create an Ollama containers,Pull the models in their respective containers,Create the Open WebUI container to serve as the front-end:
+                "docker network create ai-network",
+                "docker run -d --gpus=all --network ai-network --name ollama-llama3 -v ollama-llama3:/root/.ollama -p 11434:11434 ollama/ollama",
+                "docker run -d --gpus=all  --network ai-network --name ollama-deepseek -v ollama-deepseek:/root/.ollama -p 11435:11434 ollama/ollama",
+                "sleep 20",
+                "docker exec  ollama-llama3 ollama pull llama3.2",
+                "docker exec  ollama-deepseek ollama pull deepseek-r1:7b",
+                "docker run -d --gpus=all --network ai-network  -p 3000:8080 -e OLLAMA_BASE_URLS='http://ollama-llama3:11434;http://ollama-deepseek:11434' -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:main",
+                # docker exec -it ollama_2 ollama pull llama3.2
+            )
+
+        else:
+            user_data.add_commands(
+                "sudo yum update -y",
+                "sudo amazon-linux-extras enable docker",
+                "sudo yum install -y docker",
+                "sudo systemctl start docker",
+                "sudo systemctl enable docker",
+                "sudo usermod -aG docker ec2-user",
+                # Create an Ollama containers,Pull the models in their respective containers,Create the Open WebUI container to serve as the front-end:
+                "docker network create ai-network",
+                "docker run -d --network ai-network --name ollama-llama3 -v ollama-llama3:/root/.ollama -p 11434:11434 ollama/ollama",
+                "docker run -d  --network ai-network --name ollama-deepseek -v ollama-deepseek:/root/.ollama -p 11435:11434 ollama/ollama",
+                "docker exec  ollama-llama3 ollama pull llama3.2",
+                "docker exec  ollama-deepseek ollama pull deepseek-r1:7b",
+                "docker run -d --network ai-network  -p 3000:8080 -e OLLAMA_BASE_URLS='http://ollama-llama3:11434;http://ollama-deepseek:11434' -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:main",
+                "docker exec  ollama-llama3 ollama pull llama3.2",
+                "docker exec  ollama-deepseek ollama pull deepseek-r1:7b",
+                # docker exec -it ollama_2 ollama pull llama3.2
+            )
+
         # ==================================================
         # ============== EC2 Instance ======================
         # ==================================================
 
-        # Create an EC2 instance
+        # # Create an EC2 instance
         # private_instance = ec2.Instance(
         #     self,
         #     "DeepSeekInstance",
-        #     # instance_type=ec2.InstanceType("r5a.2xlarge"),  # Define instance type
-        #     instance_type=ec2.InstanceType("r5a.2xlarge"),  # Define instance type
+        #     # instance_type=ec2.InstanceType("g4dn.2xlarge"),  # Define instance type
+        #     instance_type=ec2.InstanceType("g4dn.2xlarge"),  # Define instance type
         #     machine_image=ami,
         #     vpc=vpc,
         #     security_group=security_group,
@@ -172,7 +198,8 @@ class AIInfraPipeline(Stack):
             "SpotDeepSeekInstance",
             # Required properties of "ec2.Instance"
             vpc=vpc,
-            instance_type=ec2.InstanceType("r5a.2xlarge"),  # Define instance type
+            instance_type=ec2.InstanceType("g4dn.xlarge"),  # Define instance type
+            #instance_type=ec2.InstanceType("r5a.2xlarge"),  # Define instance type
             machine_image=ami,
             security_group=security_group,
             key_name="simplytrack",
@@ -192,7 +219,7 @@ class AIInfraPipeline(Stack):
             spot_options=ec2.LaunchTemplateSpotOptions(
                 interruption_behavior=ec2.SpotInstanceInterruption.STOP,
                 request_type=ec2.SpotRequestType.PERSISTENT,
-                max_price=0.30,
+                max_price=0.20,
             ),
         )
 

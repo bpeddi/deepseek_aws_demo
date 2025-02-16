@@ -17,11 +17,10 @@ app = cdk.App()
 
 for env_name in ["dev",  "prod"]:
     if (a.managed_accounts[env_name]["enabled"]):
-        
         AIInfraPipeline(app, env_name+"-ai-pipeline",
             env=cdk.Environment(account=a.devops_account["account"],region=a.devops_account["region"]),
             env_name=env_name,
-            artifacts_bucket = a.managed_accounts[env_name]["artifacts_bucket"],
+            deployment_type = a.managed_accounts[env_name]["deployment_type"],
             )
 
 app.synth()
