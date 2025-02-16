@@ -1,5 +1,5 @@
-from configs.globalconfig import default_region
 
+from configs.globalconfig import default_region
 
 ## Devops Account
 devops_account = {"account": "xxxxxxxx", "region": default_region}
@@ -8,18 +8,21 @@ devops_account = {"account": "xxxxxxxx", "region": default_region}
 managed_accounts = {
     "dev": {
         "enabled": True,
+        "deployment_type" : "gpu",
+        "account": "xxxxxxxx",
+        "region": default_region,
+        "vpc_id": "vpc-c50f3bbf",
+        "private_subnets": ["subnet-xxxxxxxx", "subnet-xxxxxxxx"],
+        "artifacts_bucket": "aws-xxxxxxxx-devops-artifacts-bucket",
+    },
+    "prod": {
+        "enabled": True,
+        "deployment_type" : "gpu",
         "account": "xxxxxxxx",
         "region": default_region,
         "vpc_id": "vpc-xxxxxxxx",
         "private_subnets": ["subnet-xxxxxxxx", "subnet-xxxxxxxx"],
-        "artifacts_bucket": "aws-vamsi-devops-artifacts-bucket",
-    },
-    "prod": {
-        "enabled": True,
-        "account": "594801xxxxxxxx937661",
-        "region": default_region,
-        "vpc_id": "vpc-xxxxxxxx",
-        "private_subnets": ["subnet-xxxxxxxx", "subnet-xxxxxxxx"],
-        "artifacts_bucket": "aws-vamsi-prod-devops-artifacts-bucket",
+        "artifacts_bucket": "aws-xxxxxxxx-prod-devops-artifacts-bucket",
     },
 }
+

@@ -69,32 +69,97 @@ The Architecture diagram  illustrates a typical deployment architecture in AWS w
 
 ## Deploying to CPU based EC2 instance 
 
-No changes required ,This code works as is
+To deploy CPU based EC2 instance ,change below parameter in config file(configs/account.py)
 
+   ```bash
+      ## CI/CD managed Accounts
+      managed_accounts = {
+         "dev": {
+            "enabled": True,
+            "deployment_type" : "gpu",  # Change this parameter to cpu if you want deploy cpu powered EC2 
+   ```
+
+Below commands creates and configures three Ollama docker containers:
+
+1. **ollama-llama3**: Runs the Ollama model with name `ollama/ollama`, exposes port 11434, and pulls the latest version of the `llama3.2` model.
+2. **ollama-deepseek**: Runs the Ollama model with name `ollama/ollama`, exposes port 11435, and pulls the latest version of the `deepseek-r1:7b` model.
+3. **open-webui**: Runs a Docker container for the Open WebUI, exposing port 3000, and mounts a volume from `/app/backend/data`. The container is configured to use the URLs of both Ollama containers as base URLs.
+
+The file also sets up the environment for running Docker on Amazon Linux, creates a network for the containers, and enables automatic restarting of the Open WebUI container.
+
+   ```bash
+               user_data.add_commands(
+                "sudo yum update -y",
+                "sudo amazon-linux-extras enable docker",
+                "sudo yum install -y docker",
+                "sudo systemctl start docker",
+                "sudo systemctl enable docker",
+                "sudo usermod -aG docker ec2-user",
+                # Create an Ollama containers,Pull the models in their respective containers,Create the Open WebUI container to serve as the front-end:
+                "docker network create ai-network",
+                "docker run -d --network ai-network --name ollama-llama3 -v ollama-llama3:/root/.ollama -p 11434:11434 ollama/ollama",
+                "docker run -d  --network ai-network --name ollama-deepseek -v ollama-deepseek:/root/.ollama -p 11435:11434 ollama/ollama",
+                "docker exec  ollama-llama3 ollama pull llama3.2",
+                "docker exec  ollama-deepseek ollama pull deepseek-r1:7b",
+                "docker run -d --network ai-network  -p 3000:8080 -e OLLAMA_BASE_URLS='http://ollama-llama3:11434;http://ollama-deepseek:11434' -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:main",
+                "docker exec  ollama-llama3 ollama pull llama3.2",
+                "docker exec  ollama-deepseek ollama pull deepseek-r1:7b",
+                # docker exec -it ollama_2 ollama pull llama3.2
+            )
+   ```
 ## Deploying to GPU-powered EC2 instance instance 
 
 ### Install and configure NVIDIA drivers on EC2 Instance
-If you are planning to use GPU-powered EC2 instance, you will have to change InstanceType below line to g4dn.xlarge in cdkai_deploy/ai_deploy.py
-```instance_type=ec2.InstanceType("r5a.2xlarge"),  # Define instance type```
+By default this code deployes GPU-powered EC2 instance type **g4dn.xlarge**. 
 
-Login to EC2 instance and Run the following commands in the to install the NVIDIA GRID drivers on the g4dn EC2 instance.
-
-```sudo yum update -y
-sudo yum install gcc makesudo yum install -y gcc kernel-devel-$(uname -r)
-cd ~
-aws s3 cp --recursive s3://ec2-linux-nvidia-drivers/latest/ .
-chmod +x NVIDIA-Linux-x86_64*.run
-mkdir /home/ssm-user/tmp
-chmod -R 777 tmp
-cd /home/ssm-user 
-export TMPDIR=/home/ssm-user/tmp
-CC=/usr/bin/gcc10-cc ./NVIDIA-Linux-x86_64*.run --tmpdir=$TMPDIR
-nvidia-smi -q | head
-sudo touch /etc/modprobe.d/nvidia.conf
-echo "options nvidia NVreg_EnableGpuFirmware=0" | sudo tee --append /etc/modprobe.d/nvidia.conf
-```
+When you create an EC2 instance using CDK, you can provide a UserData value that will be executed as a shell command on the instance. This allows you to install software, configure the network, and perform other setup tasks before the instance becomes available for use.
 
 
+**User Data Script**
+
+The script performs the following tasks on an EC2 instance:
+
+1. Installs necessary packages, including GCC and kernel-devel.
+2. Downloads and installs NVIDIA drivers.
+3. Configures Docker to run as a non-root user.
+4. Enables the Docker service to start automatically on boot.
+
+**Container Creation**
+
+The script creates three containers:
+
+1. **ollama-llama3**: Runs an Ollama model with name `ollama/ollama`, exposes port 11434, and pulls the latest version of the `llama3.2` model.
+2. **ollama-deepseek**: Runs an Ollama model with name `ollama/ollama`, exposes port 11435, and pulls the latest version of the `deepseek-r1:7b` model.
+3. **open-webui**: Runs a Docker container for the Open WebUI, exposing port 3000, and mounts a volume from `/app/backend/data`. The container is configured to use the URLs of both Ollama containers as base URLs.
+
+The script also creates an NVIDIA container toolkit repository and installs it on the instance.
+
+   ```bash
+            user_data.add_commands(
+                "sudo yum install -y gcc kernel-devel-$(uname -r)",
+                "aws s3 cp --recursive s3://ec2-linux-nvidia-drivers/latest/ .",
+                "sudo chmod +x ./NVIDIA-Linux-x86_64*.run",
+                "sudo /bin/sh ./NVIDIA-Linux-x86_64*.run --tmpdir . --silent",
+                "sudo touch /etc/modprobe.d/nvidia.conf",
+                f'echo "options nvidia NVreg_EnableGpuFirmware=0" | sudo tee --append /etc/modprobe.d/nvidia.conf',
+                "sudo yum install -y docker",
+                "sudo usermod -a -G docker ec2-user",
+                "sudo systemctl enable docker.service",
+                "sudo systemctl start docker.service",
+                "curl -s -L https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo | sudo tee /etc/yum.repos.d/nvidia-container-toolkit.repo",
+                "sudo yum install -y nvidia-container-toolkit",
+                "sudo nvidia-ctk runtime configure --runtime=docker",
+                "sudo systemctl restart docker",
+                # Create an Ollama containers,Pull the models in their respective containers,Create the Open WebUI container to serve as the front-end:
+                "docker network create ai-network",
+                "docker run -d --gpus=all --network ai-network --name ollama-llama3 -v ollama-llama3:/root/.ollama -p 11434:11434 ollama/ollama",
+                "docker run -d --gpus=all  --network ai-network --name ollama-deepseek -v ollama-deepseek:/root/.ollama -p 11435:11434 ollama/ollama",
+                "sleep 20",
+                "docker exec  ollama-llama3 ollama pull llama3.2",
+                "docker exec  ollama-deepseek ollama pull deepseek-r1:7b",
+                "docker run -d --gpus=all --network ai-network  -p 3000:8080 -e OLLAMA_BASE_URLS='http://ollama-llama3:11434;http://ollama-deepseek:11434' -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:main",
+            )
+   ```
 
 ## Deployment Steps
 
@@ -131,7 +196,7 @@ echo "options nvidia NVreg_EnableGpuFirmware=0" | sudo tee --append /etc/modprob
 To remove the resources provisioned:
 
 ```sh
-cdk destroy
+cdk destroy dev-ai-pipeline
 ```
 ## Final output
 
