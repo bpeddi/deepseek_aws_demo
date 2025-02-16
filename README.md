@@ -6,7 +6,8 @@
 [DeepSeek](https://www.deepseek.com/) R1 is a large language model developed with a strong focus on reasoning tasks. It excels at problems requiring multi-step analysis and logical thinking. Unlike typical models that rely heavily on Supervised Fine-Tuning (SFT), DeepSeek R1 uses Reinforcement Learning (RL) as its primary training strategy. This emphasis on RL empowers it to figure out solutions with greater independence. <br> <br>
 
 
-This project provisions a scalable and secure AI infrastructure for deploying the DeepSeek AI model using **AWS CDK (Cloud Development Kit)** with Python. The architecture leverages **Amazon VPC, EC2 Instances, IAM Roles, Security Groups, and S3 Bucket** integration to provide a robust environment for AI model training and inference. This CDK implementation also automates the deployment of Docker containers and efficiently downloads the DeepSeek and Ollama models, alongside Open-WebUI for seamless model inference and interaction.
+This project provisions a scalable and secure AI infrastructure for deploying the DeepSeek AI model using **AWS CDK (Cloud Development Kit)** with Python. The architecture leverages **Amazon VPC, EC2 Instances, IAM Roles, Security Groups, and S3 Bucket** integration to provide a robust environment for AI model training and inference. 
+<br>
 
 
 ![Architecture](deepseek_aws.PNG)
@@ -38,9 +39,6 @@ The Architecture diagram  illustrates a typical deployment architecture in AWS w
 **In Summary**
 
 
-
-Citations:
-[1] https://pplx-res.cloudinary.com/image/upload/v1739726579/user_uploads/ZSkVcgOgtdpHaMa/deepseek_aws.jpg
 
 ## Prerequisites:
 - Active AWS account with appropriate permissions to launch EC2 instances and manage related resources.
