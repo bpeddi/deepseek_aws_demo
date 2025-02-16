@@ -11,6 +11,37 @@ This project provisions a scalable and secure AI infrastructure for deploying th
 
 ![Architecture](deepseek_aws.PNG)
 
+Okay, here's a breakdown of the image you sent, which illustrates the deployment of Deepseek R1 into an AWS EC2 instance:
+
+**Overall Architecture**
+
+The Architecture diagram  illustrates a typical deployment architecture in AWS where the Deepseek R1 model is deployed in a private subnet for security, while a reverse proxy in the public subnet handles external requests and routes them to the Deepseek R1 application. The AWS CDK is used to automate and manage the deployment process.It also outlines how end-users interact with the Deepseek R1 model, which runs within an AWS environment.
+
+**Key Components and Flow**
+
+1.  **End Users:**  Represented by figures, they are the users who will be accessing and interacting with the Deepseek R1 application.
+
+2.  **AWS Cloud Development Kit (CDK):** The AWS CDK is used to define and deploy the cloud infrastructure.  The infrastructure is defined as code (in Python, as indicated).  This allows for repeatable and version-controlled deployments.
+
+3.  **VPC (Virtual Private Cloud):** The AWS VPC provides a logically isolated section of the AWS Cloud where the resources are launched, providing control over the virtual networking environment.  It contains a Public Subnet and a Private Subnet.
+
+4.  **Public Subnet:**
+    *   **EC2 Instance:** An EC2 (Elastic Compute Cloud) instance is launched within the public subnet. This EC2 instance hosts a reverse proxy.
+    *   **Nginx (Reverse Proxy):** Nginx acts as a reverse proxy.  It receives requests from the end-users and forwards them to the appropriate server in the private subnet.
+
+5.  **Private Subnet:**
+    *   **EC2 Instance:** Another EC2 instance resides within the private subnet. This instance hosts the core components of the Deepseek R1 deployment.
+    *   **Docker:** Docker is used to containerize the AI Models, Open WebUI
+    *   **Deepseek:** This represents the Deepseek R1 model, running inside a Docker container.
+    *   **Open-WebUI:** This provides a web interface for interacting with the Deepseek model.
+
+**In Summary**
+
+
+
+Citations:
+[1] https://pplx-res.cloudinary.com/image/upload/v1739726579/user_uploads/ZSkVcgOgtdpHaMa/deepseek_aws.jpg
+
 ## Prerequisites:
 - Active AWS account with appropriate permissions to launch EC2 instances and manage related resources.
 - Service Quota limit for approved for Running On-Demand Inf instances under Amazon Elastic Compute Cloud (Amazon EC2) with a value of 96 or above.
@@ -93,7 +124,7 @@ echo "options nvidia NVreg_EnableGpuFirmware=0" | sudo tee --append /etc/modprob
    ```
 5. **Deploy the stack:**
    ```sh
-   cdk deploy
+    cdk deploy dev-ai-pipeline  --require-approval never
    ```
 
 
