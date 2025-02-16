@@ -21,8 +21,6 @@ for env_name in ["dev",  "prod"]:
         AIInfraPipeline(app, env_name+"-ai-pipeline",
             env=cdk.Environment(account=a.devops_account["account"],region=a.devops_account["region"]),
             env_name=env_name,
-            vpccluster_vpc_id=a.managed_accounts[env_name]["vpc_id"],
-            private_subnets=a.managed_accounts[env_name]["private_subnets"],
             artifacts_bucket = a.managed_accounts[env_name]["artifacts_bucket"],
             )
 

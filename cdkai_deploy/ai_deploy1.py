@@ -6,7 +6,6 @@ from aws_cdk import (
     Stack,
 )
 from constructs import Construct
-from cdk_ec2_spot_simple import SpotInstance
 import os
 import json
 
@@ -119,7 +118,6 @@ class AIInfraPipeline(Stack):
 
         # Define user data script for instance initialization
         user_data = ec2.UserData.for_linux()
-
         user_data.add_commands(
             "sudo yum update -y",
             "sudo amazon-linux-extras enable docker",
@@ -127,55 +125,27 @@ class AIInfraPipeline(Stack):
             "sudo systemctl start docker",
             "sudo systemctl enable docker",
             "sudo usermod -aG docker ec2-user",
-            # Create an Ollama containers,Pull the models in their respective containers,Create the Open WebUI container to serve as the front-end:
-            "docker network create ai-network",
-            "docker run -d --network ai-network --name ollama-llama3 -v ollama-llama3:/root/.ollama -p 11434:11434 ollama/ollama",
-            "docker run -d  --network ai-network --name ollama-deepseek -v ollama-deepseek:/root/.ollama -p 11435:11434 ollama/ollama",
-            "docker exec  ollama-llama3 ollama pull llama3.2",
-            "docker exec  ollama-deepseek ollama pull deepseek-r1:7b",
-            "docker run -d --network ai-network  -p 3000:8080 -e OLLAMA_BASE_URLS='http://ollama-llama3:11434;http://ollama-deepseek:11434' -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:main",
-            "docker exec  ollama-llama3 ollama pull llama3.2",
-            "docker exec  ollama-deepseek ollama pull deepseek-r1:7b",
-            # docker exec -it ollama_2 ollama pull llama3.2
+            "docker network create ollama_nw_1",
+            "docker run -d --network ollama_nw_1 -v ollama:/root/.ollama -p 11435:11434 --name ollama_1 ollama/ollama",
+            "docker run -d --network ollama_nw_1 -v ollama:/root/.ollama -p 11436:11434 --name ollama_2 ollama/ollama",
+            "docker run -d --network ollama_nw_1 -p 3000:8080 -e OLLAMA_BASE_URL='http://ollama_1:11434;http://ollama_1:11435;http://ollama_1:11436' -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:main",
+            "docker exec -it ollama_1 ollama pull deepseek-r1:7b",
+            "docker exec -it ollama_2 ollama pull llama3.2",
         )
+
         # ==================================================
         # ============== EC2 Instance ======================
         # ==================================================
 
         # Create an EC2 instance
-        # private_instance = ec2.Instance(
-        #     self,
-        #     "DeepSeekInstance",
-        #     # instance_type=ec2.InstanceType("r5a.2xlarge"),  # Define instance type
-        #     instance_type=ec2.InstanceType("r5a.2xlarge"),  # Define instance type
-        #     machine_image=ami,
-        #     vpc=vpc,
-        #     security_group=security_group,
-        #     key_pair=key_pair,
-        #     role=role,
-        #     user_data=user_data,  # Attach user data script
-        #     block_devices=[
-        #         ec2.BlockDevice(
-        #             device_name="/dev/xvda",
-        #             volume=ec2.BlockDeviceVolume.ebs(
-        #                 volume_size=100,  # 100 GB EBS volume
-        #                 volume_type=ec2.EbsDeviceVolumeType.GP3,
-        #             ),
-        #         )
-        #     ],
-        #     vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
-        # )  # Deploy in public subnet
-
-        # Advanced usage
-        spot_instance = SpotInstance(
+        instance = ec2.Instance(
             self,
-            "SpotDeepSeekInstance",
-            # Required properties of "ec2.Instance"
-            vpc=vpc,
+            "DeepSeekInstance",
             instance_type=ec2.InstanceType("r5a.2xlarge"),  # Define instance type
             machine_image=ami,
+            vpc=vpc,
             security_group=security_group,
-            key_name="simplytrack",
+            key_pair=key_pair,
             role=role,
             user_data=user_data,  # Attach user data script
             block_devices=[
@@ -187,67 +157,7 @@ class AIInfraPipeline(Stack):
                     ),
                 )
             ],
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
-            # SpotInstance specific property
-            spot_options=ec2.LaunchTemplateSpotOptions(
-                interruption_behavior=ec2.SpotInstanceInterruption.STOP,
-                request_type=ec2.SpotRequestType.PERSISTENT,
-                max_price=0.30,
-            ),
+            vpc_subnets=ec2.SubnetSelection(
+                subnet_type=ec2.SubnetType.PUBLIC
+            ),  # Deploy in public subnet
         )
-
-        # f"echo 'server {{ listen 80; location / {{ proxy_pass http://{private_instance.instance_private_ip}:3000; }} }}' | sudo tee /etc/nginx/conf.d/reverse-proxy.conf",
-        user_data = ec2.UserData.for_linux()
-        # f"echo 'server {{ listen 80; location / {{ proxy_pass http://{private_instance.instance_private_ip}:3000; }} }}' | sudo tee /etc/nginx/conf.d/reverse-proxy.conf",
-        # user_data.add_commands(
-        #     "sudo yum update -y",
-        #     "sudo amazon-linux-extras install nginx1 -y",
-        #     "sudo systemctl start nginx",
-        #     "sudo systemctl enable nginx",
-        #     f"echo 'server {{ listen 80; location / {{ proxy_pass http://{spot_instance.instance_private_ip}:3000;proxy_http_version 1.1;proxy_set_header Upgrade $http_upgrade;proxy_set_header Connection "Upgrade";proxy_set_header Host $host;proxy_set_header X-Real-IP $remote_addr;proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;proxy_set_header X-Forwarded-Proto $scheme; }} }}' | sudo tee /etc/nginx/conf.d/reverse-proxy.conf",
-        #     "sudo nginx -s reload",
-        # )
-
-        user_data.add_commands(
-            "sudo yum update -y",
-            "sudo amazon-linux-extras install nginx1 -y",
-            "sudo systemctl start nginx",
-            "sudo systemctl enable nginx",
-            f"""
-            echo '
-            server {{
-                listen 80;
-                location / {{
-                    proxy_pass http://{spot_instance.instance_private_ip}:3000;
-                    proxy_http_version 1.1;
-                    proxy_set_header Upgrade $http_upgrade;
-                    proxy_set_header Connection "Upgrade";
-                    proxy_set_header Host $host;
-                    proxy_set_header X-Real-IP $remote_addr;
-                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                    proxy_set_header X-Forwarded-Proto $scheme;
-                }}
-            }} ' | sudo tee /etc/nginx/conf.d/reverse-proxy.conf 
-            """,
-            "sudo nginx -s reload",
-        )
-
-
-        # EC2 instance in public subnet with Nginx
-        public_instance = ec2.Instance(
-            self,
-            "PublicInstance",
-            instance_type=ec2.InstanceType.of(
-                ec2.InstanceClass.T3, ec2.InstanceSize.MICRO
-            ),
-            machine_image=ec2.MachineImage.latest_amazon_linux2(),
-            vpc=vpc,
-            key_pair=key_pair,
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
-            user_data=user_data,
-        )
-
-        public_instance.connections.allow_from_any_ipv4(ec2.Port.tcp(80))
-        public_instance.connections.allow_from_any_ipv4(ec2.Port.tcp(22))
-
-        CfnOutput(self, "NginxPublicIP", value=public_instance.instance_public_ip)

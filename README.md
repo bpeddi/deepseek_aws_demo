@@ -104,6 +104,12 @@ To remove the resources provisioned:
 ```sh
 cdk destroy
 ```
+## Final output
+
+Once you deploy the solution, you should be able to access models by opening public ip
+`http://<public Ip>`
+
+![Open WEBUI](open_web_aws.PNG)
 
 ## Configuration
 

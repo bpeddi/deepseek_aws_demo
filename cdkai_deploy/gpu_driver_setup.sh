@@ -47,3 +47,6 @@ docker exec -it ollama_3 ollama pull deepseek-r1:8b
 docker exec -it ollama_2 ollama pull deepseek-r1:7b
 docker exec -it ollama_4 ollama pull llama3.1:8b
 
+
+
+
