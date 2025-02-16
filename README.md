@@ -1,5 +1,6 @@
 
-# Deepseek Infrastructure Pipeline - AWS CDK
+# Open Source Large Language Models(LLMs) Infrastructure Pipeline - AWS CDK
+
 
 
 ## Addressing Enterprise Security Concerns with Private GenAI Deployments
@@ -28,13 +29,13 @@ To overcome these hurdles, this solution deployes open-source AI models within a
 * **Model Fine-Tuning:** Companies can further leverage the solution by fine-tuning the deployed models with their own proprietary data, tailoring them to specific business needs and improving their accuracy on internal tasks.
 
 ## AI Models Overview
-Llama is a family of large language models (LLMs) released by Meta AI starting in February 2023.
-DeepSeek is the name of a free AI-powered chatbot, which looks, feels and works very much like ChatGPT.It is reportedly as powerful as OpenAI's o1 model - released at the end of last year - in tasks including mathematics and coding.
+
+* Llama is a family of large language models (LLMs) released by Meta AI starting in February 2023.
+* DeepSeek is the name of a free AI-powered chatbot, which looks, feels and works very much like ChatGPT.It is reportedly as powerful as OpenAI's o1 model - released at the end of last year - in tasks including mathematics and coding.
 
 [DeepSeek](https://www.deepseek.com/) R1 is a large language model developed with a strong focus on reasoning tasks. It excels at problems requiring multi-step analysis and logical thinking. Unlike typical models that rely heavily on Supervised Fine-Tuning (SFT), DeepSeek R1 uses Reinforcement Learning (RL) as its primary training strategy. This emphasis on RL empowers it to figure out solutions with greater independence. <br> <br>
 
-
-This project provisions a scalable and secure AI infrastructure for deploying the llama and DeepSeek AI models using **AWS CDK (Cloud Development Kit)** with Python. The architecture leverages **Amazon VPC, EC2 Instances, IAM Roles, Security Groups, ollama, docker and open WebUI** integration to provide a robust environment for AI model training and inference. 
+This project provisions a scalable and secure AI infrastructure for deploying the Llama and DeepSeek AI models using **AWS CDK (Cloud Development Kit)** with Python. The architecture leverages **Amazon VPC, EC2 Instances, IAM Roles, Security Groups, ollama, docker and open WebUI** integration to provide a robust environment for AI model training and inference. 
 <br>
 
 
